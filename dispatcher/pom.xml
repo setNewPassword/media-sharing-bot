@@ -12,10 +12,10 @@
     <artifactId>dispatcher</artifactId>
 
     <properties>
-        <maven.compiler.source>19</maven.compiler.source>
-        <maven.compiler.target>19</maven.compiler.target>
+        <maven.compiler.source>11</maven.compiler.source>
+        <maven.compiler.target>11</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <telegrambot.starter.version>6.8.0</telegrambot.starter.version>
+        <telegrambot.starter.version>5.0.1</telegrambot.starter.version>
     </properties>
 
     <dependencies>
