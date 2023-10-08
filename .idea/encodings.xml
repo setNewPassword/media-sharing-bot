@@ -4,6 +4,7 @@
     <file url="file://$PROJECT_DIR$/common-rabbitmq/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/dispatcher/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/dispatcher/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/node/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/src/main/resources" charset="UTF-8" />
   </component>
