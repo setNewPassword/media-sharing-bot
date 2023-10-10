@@ -4,6 +4,7 @@ target/
 !**/src/test/**/target/
 /logs
 dispatcher/target
+/btard_db/
 
 ### IntelliJ IDEA ###
 .idea/modules.xml
