@@ -7,14 +7,18 @@ import com.btard.entity.RawData;
 import com.btard.entity.enums.UserState;
 import com.btard.service.MainService;
 import com.btard.service.ProducerService;
+import lombok.extern.log4j.Log4j;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.User;
 
 import static com.btard.entity.enums.UserState.BASIC_STATE;
+import static com.btard.entity.enums.UserState.WAIT_FOR_EMAIL_STATE;
+import static com.btard.service.enums.ServiceCommands.*;
 
 @Service
+@Log4j
 public class MainServiceImpl implements MainService {
     private final RawDataDao rawDataDao;
     private final ProducerService producerService;
@@ -29,18 +33,104 @@ public class MainServiceImpl implements MainService {
     @Override
     public void processTextMessage(Update update) {
         saveRawData(update);
-        var textMessage = update.getMessage();
-        var telegramUser = textMessage.getFrom();
-        var appUser = findOrSaveAppUser(telegramUser);
+        var appUser = findOrSaveAppUser(update);
+        var userState = appUser.getState();
+        var text = update.getMessage().getText();
+        var output = "";
 
-        var message = update.getMessage();
-        var sendMessage = new SendMessage();
-        sendMessage.setChatId(message.getChatId());
-        sendMessage.setText("Hello from Node!");
+        if(CANCEL.equals(text)) {
+            output = cancelProcess(appUser);
+        } else if(BASIC_STATE.equals(userState)) {
+            output = processServiceCommand(appUser, text);
+        } else if(WAIT_FOR_EMAIL_STATE.equals(userState)) {
+            //TODO Добавить обработку электронной почты
+        } else {
+            log.error("Unknown user state: " + userState);
+            output = "Неизвестная ошибка! Введите /cancel и повторите попытку.";
+        }
+
+        var chatId = update.getMessage().getChatId();
+        sendAnswer(output, chatId);
+    }
+
+    @Override
+    public void processDocMessage(Update update) {
+        saveRawData(update);
+        var appUser = findOrSaveAppUser(update);
+        var chatId = update.getMessage().getChatId();
+        if(isNotAllowToSendContent(chatId, appUser)) {
+            return;
+        }
+
+        //TODO добавить сохранение документа
+        var answer = "Документ успешно загружен! Ссылка для скачивания: https://tiny.cc/km8cvz";
+        sendAnswer(answer, chatId);
+    }
+
+    @Override
+    public void processPhotoMessage(Update update) {
+        saveRawData(update);
+        var appUser = findOrSaveAppUser(update);
+        var chatId = update.getMessage().getChatId();
+        if(isNotAllowToSendContent(chatId, appUser)) {
+            return;
+        }
+
+        //TODO добавить сохранение фоток
+        var answer = "Фото успешно загружено! Ссылка для скачивания: https://tiny.cc/km8cvz";
+        sendAnswer(answer, chatId);
+    }
+
+    private boolean isNotAllowToSendContent(Long chatId, AppUser appUser) {
+        var userState = appUser.getState();
+        if(!appUser.getIsActive()) {
+            var error = "Зарегистрируйтесь или активируйте учетную запись для отправки контента.";
+            sendAnswer(error, chatId);
+            return true;
+        } else if (!BASIC_STATE.equals(userState)) {
+            var error = "Отмените текущую команду с помощью /cancel для отправки контента.";
+            sendAnswer(error, chatId);
+            return true;
+        }
+        return false;
+    }
+
+    private void sendAnswer(String output, Long chatId) {
+        SendMessage sendMessage = new SendMessage();
+        sendMessage.setChatId(chatId);
+        sendMessage.setText(output);
         producerService.produceAnswer(sendMessage);
     }
 
-    private AppUser findOrSaveAppUser(User telegramUser) {
+    private String processServiceCommand(AppUser appUser, String cmd) {
+        String answer = "";
+        if(REGISTRATION.equals(cmd)) {
+            //TODO добавить регистрацию
+            answer = "Функция в разработке";
+        } else if(HELP.equals(cmd)) {
+            answer = help();
+        } else if (START.equals(cmd)) {
+            answer = "Привет! Чтобы просмотреть список доступных команд, введите /help";
+        } else {
+            answer = "Неизвестная команда. Чтобы просмотреть список доступных команд, введите /help";
+        }
+        return answer;
+    }
+
+    private String help() {
+        return "Список доступных команд: \n"
+                + "/cancel — отмена выполнения текущей операции;\n"
+                + "/registration — регистрация пользователя.";
+    }
+
+    private String cancelProcess(AppUser appUser) {
+        appUser.setState(BASIC_STATE);
+        appUserDao.save(appUser);
+        return "Команда отменена.";
+    }
+
+    private AppUser findOrSaveAppUser(Update update) {
+        var telegramUser = update.getMessage().getFrom();
         AppUser persistentAppUser = appUserDao.findAppUsersByTelegramUserId(telegramUser.getId());
         if(persistentAppUser == null) {
             AppUser transientAppUser = AppUser
