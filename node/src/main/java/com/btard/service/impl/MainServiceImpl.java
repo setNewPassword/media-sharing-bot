@@ -3,6 +3,7 @@ package com.btard.service.impl;
 import com.btard.dao.AppUserDao;
 import com.btard.dao.RawDataDao;
 import com.btard.entity.AppDocument;
+import com.btard.entity.AppPhoto;
 import com.btard.entity.AppUser;
 import com.btard.entity.RawData;
 import com.btard.exception.FileUploadException;
@@ -92,9 +93,17 @@ public class MainServiceImpl implements MainService {
             return;
         }
 
-        //TODO добавить сохранение фоток
-        var answer = "Фото успешно загружено! Ссылка для скачивания: https://tiny.cc/km8cvz";
-        sendAnswer(answer, chatId);
+        try {
+            AppPhoto photo = fileService.processPhoto(update.getMessage());
+            //TODO добавить генерацию ссылки для скачивания фото
+            var answer = "Фото успешно загружено! "
+                    + "Ссылка для скачивания: https://tiny.cc/km8cvz";
+            sendAnswer(answer, chatId);
+        } catch (FileUploadException ex) {
+            log.error(ex);
+            String error = "К сожалению, не удалось загрузить фото. Попробуйте еще раз чуть позже.";
+            sendAnswer(error, chatId);
+        }
     }
 
     private boolean isNotAllowToSendContent(Long chatId, AppUser appUser) {
