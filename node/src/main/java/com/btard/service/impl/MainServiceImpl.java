@@ -10,6 +10,7 @@ import com.btard.exception.FileUploadException;
 import com.btard.service.FileService;
 import com.btard.service.MainService;
 import com.btard.service.ProducerService;
+import com.btard.service.enums.LinkType;
 import com.btard.service.enums.ServiceCommand;
 import lombok.extern.log4j.Log4j;
 import org.springframework.stereotype.Service;
@@ -73,8 +74,8 @@ public class MainServiceImpl implements MainService {
 
         try {
             AppDocument doc = fileService.processDoc(update.getMessage());
-            //TODO Добавить генерацию ссылки для скачивания документа
-            var answer = "Документ успешно загружен! Ссылка для скачивания: https://tiny.cc/km8cvz";
+            String link = fileService.generateLink(doc.getId(), LinkType.GET_DOC);
+            var answer = "Документ успешно загружен! Ссылка для скачивания: " + link;
             sendAnswer(answer, chatId);
         } catch (FileUploadException exception) {
             log.error(exception);
@@ -95,9 +96,8 @@ public class MainServiceImpl implements MainService {
 
         try {
             AppPhoto photo = fileService.processPhoto(update.getMessage());
-            //TODO добавить генерацию ссылки для скачивания фото
-            var answer = "Фото успешно загружено! "
-                    + "Ссылка для скачивания: https://tiny.cc/km8cvz";
+            String link = fileService.generateLink(photo.getId(), LinkType.GET_PHOTO);
+            var answer = "Фото успешно загружено! Ссылка для скачивания: " + link;
             sendAnswer(answer, chatId);
         } catch (FileUploadException ex) {
             log.error(ex);
