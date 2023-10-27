@@ -1,8 +1,8 @@
 package com.btard.config;
 
+import com.btard.utils.CryptoTool;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
-import com.btard.utils.CryptoTool;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
