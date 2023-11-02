@@ -2,30 +2,30 @@ package com.btard.service.impl;
 
 import com.btard.dto.MailParams;
 import com.btard.service.MailSenderService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 
+@RequiredArgsConstructor
 @Service
 public class MailSenderServiceImpl implements MailSenderService {
     private final JavaMailSender javaMailSender;
+
     @Value("${spring.mail.username}")
     private String emailFrom;
+
     @Value("${service.activation.uri}")
     private String activationServiceUri;
 
-    public MailSenderServiceImpl(JavaMailSender javaMailSender) {
-        this.javaMailSender = javaMailSender;
-    }
-
     @Override
     public void send(MailParams mailParams) {
-        String subject = "Активация учетной записи";
-        String messageBody = getActivationMailBody(mailParams.getId());
-        String emailTo = mailParams.getEmailTo();
+        var subject = "Активация учетной записи";
+        var messageBody = getActivationMailBody(mailParams.getId());
+        var emailTo = mailParams.getEmailTo();
 
-        SimpleMailMessage mailMessage = new SimpleMailMessage();
+        var mailMessage = new SimpleMailMessage();
         mailMessage.setFrom(emailFrom);
         mailMessage.setTo(emailTo);
         mailMessage.setSubject(subject);

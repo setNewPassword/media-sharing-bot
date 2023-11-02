@@ -10,10 +10,15 @@ import com.btard.exception.FileUploadException;
 import com.btard.service.FileService;
 import com.btard.service.enums.LinkType;
 import com.btard.utils.CryptoTool;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.*;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.telegram.telegrambots.meta.api.objects.Document;
@@ -26,31 +31,30 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Objects;
 
-@Service
 @Log4j
+@RequiredArgsConstructor
+@Service
 public class FileServiceImpl implements FileService {
+
     @Value("${token}")
     private String token;
+
     @Value("${service.file_info.uri}")
     private  String fileInfoUri;
+
     @Value("${service.file_storage.uri}")
     private  String fileStorageUri;
+
     @Value("${link.address}")
     private String linkAddress;
-    private final AppDocumentDao appDocumentDao;
-    private final AppPhotoDao appPhotoDao;
-    private final BinaryContentDao binaryContentDao;
-    private final CryptoTool cryptoTool;
 
-    public FileServiceImpl(AppDocumentDao appDocumentDao,
-                           AppPhotoDao appPhotoDao,
-                           BinaryContentDao binaryContentDao,
-                           CryptoTool cryptoTool) {
-        this.appDocumentDao = appDocumentDao;
-        this.appPhotoDao = appPhotoDao;
-        this.binaryContentDao = binaryContentDao;
-        this.cryptoTool = cryptoTool;
-    }
+    private final AppDocumentDao appDocumentDao;
+
+    private final AppPhotoDao appPhotoDao;
+
+    private final BinaryContentDao binaryContentDao;
+
+    private final CryptoTool cryptoTool;
 
     @Override
     public AppDocument processDoc(Message telegramMessage) {
@@ -91,14 +95,16 @@ public class FileServiceImpl implements FileService {
     private BinaryContent getPersistentBinaryContent(ResponseEntity<String> response) {
         String filePath = getFilePath(response);
         byte[] fileInByte = downloadFile(filePath);
-        BinaryContent transientBinaryContent = BinaryContent.builder()
+        BinaryContent transientBinaryContent = BinaryContent
+                .builder()
                 .fileAsArrayOfBytes(fileInByte)
                 .build();
         return binaryContentDao.save(transientBinaryContent);
     }
 
     private AppDocument buildTransientAppDoc(Document telegramDoc, BinaryContent persistentBinaryContent) {
-        return AppDocument.builder()
+        return AppDocument
+                .builder()
                 .telegramFileId(telegramDoc.getFileId())
                 .docName(telegramDoc.getFileName())
                 .binaryContent(persistentBinaryContent)
@@ -108,7 +114,8 @@ public class FileServiceImpl implements FileService {
     }
 
     private AppPhoto buildTransientAppPhoto(PhotoSize telegramPhoto, BinaryContent persistentBinaryContent) {
-        return AppPhoto.builder()
+        return AppPhoto
+                .builder()
                 .telegramFileId(telegramPhoto.getFileId())
                 .binaryContent(persistentBinaryContent)
                 .fileSize(telegramPhoto.getFileSize())

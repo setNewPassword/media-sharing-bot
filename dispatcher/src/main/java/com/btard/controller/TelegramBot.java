@@ -1,5 +1,6 @@
 package com.btard.controller;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -12,24 +13,27 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 import javax.annotation.PostConstruct;
 
-@Component
 @Log4j
+@RequiredArgsConstructor
+@Component
 public class TelegramBot extends TelegramWebhookBot {
+
     @Value("${bot.name}")
     private String botName;
+
     @Value("${bot.token}")
     private String botToken;
+
     @Value("${bot.uri}")
     private String botUri;
-    private final UpdateProcessor updateProcessor;
 
-    public TelegramBot(UpdateProcessor updateProcessor) {
-        this.updateProcessor = updateProcessor;
-    }
+    private final UpdateProcessor updateProcessor;
 
     @PostConstruct
     public void init() {
+
         updateProcessor.registerBot(this);
+
         try {
             var setWebhook = SetWebhook
                     .builder()
@@ -39,6 +43,7 @@ public class TelegramBot extends TelegramWebhookBot {
         } catch (TelegramApiException e) {
             log.error(e);
         }
+
     }
 
     @Override

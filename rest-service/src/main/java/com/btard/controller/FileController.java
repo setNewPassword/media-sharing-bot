@@ -1,6 +1,7 @@
 package com.btard.controller;
 
 import com.btard.service.FileService;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -12,14 +13,12 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 @Log4j
+@RequiredArgsConstructor
 @RequestMapping("/file")
 @RestController
 public class FileController {
-    private final FileService fileService;
 
-    public FileController(FileService fileService) {
-        this.fileService = fileService;
-    }
+    private final FileService fileService;
 
     @RequestMapping(method = RequestMethod.GET, value = "/get-doc")
     public void getDoc(@RequestParam("id") String id, HttpServletResponse response) {
@@ -66,4 +65,5 @@ public class FileController {
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
         }
     }
+
 }

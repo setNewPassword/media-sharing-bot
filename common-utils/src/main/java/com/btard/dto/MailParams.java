@@ -1,6 +1,10 @@
 package com.btard.dto;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Getter
 @Setter
@@ -8,6 +12,9 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 public class MailParams {
+
     private String id;
+
     private String emailTo;
+
 }

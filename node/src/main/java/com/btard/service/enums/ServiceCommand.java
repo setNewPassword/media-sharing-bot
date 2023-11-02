@@ -1,10 +1,12 @@
 package com.btard.service.enums;
 
 public enum ServiceCommand {
+
     HELP("/help"),
     REGISTRATION("/registration"),
     CANCEL("/cancel"),
     START("/start");
+
     private final String value;
 
     ServiceCommand(String value) {
@@ -16,12 +18,13 @@ public enum ServiceCommand {
         return value;
     }
 
-    public static ServiceCommand fromValue(String v) {
-        for (ServiceCommand c: ServiceCommand.values()) {
-            if (c.value.equals(v)) {
-                return c;
+    public static ServiceCommand fromValue(String inputValue) {
+        for (ServiceCommand command: ServiceCommand.values()) {
+            if (command.value.equals(inputValue)) {
+                return command;
             }
         }
         return null;
     }
+
 }

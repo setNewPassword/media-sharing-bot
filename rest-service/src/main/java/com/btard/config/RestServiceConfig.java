@@ -7,6 +7,7 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class RestServiceConfig {
+
     @Value("${salt}")
     private String salt;
 
@@ -14,4 +15,5 @@ public class RestServiceConfig {
     public CryptoTool getCryptoTool() {
         return new CryptoTool(salt);
     }
+
 }

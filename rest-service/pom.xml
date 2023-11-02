@@ -15,6 +15,10 @@
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <common-utils.version>1.0-SNAPSHOT</common-utils.version>
+        <common-jpa.version>1.0-SNAPSHOT</common-jpa.version>
+        <common-io.version>2.4</common-io.version>
+        <postgresql.version>42.6.0</postgresql.version>
     </properties>
 
     <dependencies>
@@ -31,25 +35,25 @@
         <dependency>
             <groupId>com.btard</groupId>
             <artifactId>common-jpa</artifactId>
-            <version>1.0-SNAPSHOT</version>
+            <version>${common-jpa.version}</version>
         </dependency>
 
         <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
-            <version>2.4</version>
+            <version>${common-io.version}</version>
         </dependency>
 
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
-            <version>42.6.0</version>
+            <version>${postgresql.version}</version>
         </dependency>
 
         <dependency>
             <groupId>com.btard</groupId>
             <artifactId>common-utils</artifactId>
-            <version>1.0-SNAPSHOT</version>
+            <version>${common-utils.version}</version>
         </dependency>
 
     </dependencies>

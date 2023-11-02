@@ -1,6 +1,7 @@
 package com.btard.exception;
 
 public class FileUploadException extends RuntimeException {
+
     public FileUploadException(String message, Throwable cause) {
         super(message, cause);
     }
@@ -12,4 +13,5 @@ public class FileUploadException extends RuntimeException {
     public FileUploadException(Throwable cause) {
         super(cause);
     }
+
 }

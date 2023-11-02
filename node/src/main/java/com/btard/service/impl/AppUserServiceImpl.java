@@ -5,11 +5,11 @@ import com.btard.dto.MailParams;
 import com.btard.entity.AppUser;
 import com.btard.service.AppUserService;
 import com.btard.utils.CryptoTool;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.*;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
@@ -19,17 +19,18 @@ import static com.btard.entity.enums.UserState.BASIC_STATE;
 import static com.btard.entity.enums.UserState.WAIT_FOR_EMAIL_STATE;
 
 @Log4j
+@RequiredArgsConstructor
 @Service
 public class AppUserServiceImpl implements AppUserService {
-    private final AppUserDao appUserDao;
-    private final CryptoTool cryptoTool;
-    @Value("${service.mail.uri}")
-    private String mailServiceUri;
 
-    public AppUserServiceImpl(AppUserDao appUserDao, CryptoTool cryptoTool) {
-        this.appUserDao = appUserDao;
-        this.cryptoTool = cryptoTool;
-    }
+    private final AppUserDao appUserDao;
+
+    private final CryptoTool cryptoTool;
+
+    @Value("${spring.rabbitmq.queues.registration-mail}")
+    private String registrationMailQueue;
+
+    private final RabbitTemplate rabbitTemplate;
 
     @Override
     public String registerUser(AppUser appUser) {
@@ -49,7 +50,7 @@ public class AppUserServiceImpl implements AppUserService {
     @Override
     public String setEmail(AppUser appUser, String email) {
         try {
-            InternetAddress emailAddr = new InternetAddress(email);
+            var emailAddr = new InternetAddress(email);
             emailAddr.validate();
         } catch (AddressException e) {
             return "Пожалуйста, введите корректный email.\n" +
@@ -62,14 +63,7 @@ public class AppUserServiceImpl implements AppUserService {
             appUser = appUserDao.save(appUser);
 
             String cryptoUserId = cryptoTool.hashOf(appUser.getId());
-            ResponseEntity<String> response = sendRequestToMailService(cryptoUserId, email);
-            if (response.getStatusCode() != HttpStatus.OK) {
-                var msg = String.format("Отправка эл. письма на почту %s не удалась.", email);
-                log.error(msg);
-                appUser.setEmail(null);
-                appUserDao.save(appUser);
-                return msg;
-            }
+            sendRegistrationMail(cryptoUserId, email);
             return "Письмо для подтверждения регистрации было отправлено вам на почту. \n"
                     + "Перейдите по ссылке в письме, чтоб начать пользоваться ботом.";
         } else {
@@ -79,18 +73,12 @@ public class AppUserServiceImpl implements AppUserService {
         }
     }
 
-    private ResponseEntity<String> sendRequestToMailService(String cryptoUserId, String email) {
-        var restTemplate = new RestTemplate();
-        var headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        var mailParams = MailParams.builder()
+    private void sendRegistrationMail(String cryptoUserId, String email) {
+        var mailParams = MailParams
+                .builder()
                 .id(cryptoUserId)
                 .emailTo(email)
                 .build();
-        var request = new HttpEntity<>(mailParams, headers);
-        return restTemplate.exchange(mailServiceUri,
-                HttpMethod.POST,
-                request,
-                String.class);
+        rabbitTemplate.convertAndSend(registrationMailQueue, mailParams);
     }
 }
