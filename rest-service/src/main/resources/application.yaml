@@ -1,0 +1,12 @@
+server:
+  port: ${PORT_REST_SERVICE}
+
+spring:
+  datasource:
+    url: jdbc:postgresql://${DB_NAME}:${PORT_DB}/${POSTGRES_DB}
+    username: ${SPRING_RABBITMQ_USER}
+    password: ${SPRING_RABBITMQ_PASSWORD}
+  jpa:
+    generate-ddl: true
+
+salt: $SALT

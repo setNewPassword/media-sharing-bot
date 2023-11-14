@@ -36,7 +36,7 @@ import java.util.Objects;
 @Service
 public class FileServiceImpl implements FileService {
 
-    @Value("${token}")
+    @Value("${bot.token}")
     private String token;
 
     @Value("${service.file_info.uri}")

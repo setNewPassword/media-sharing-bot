@@ -1,0 +1,121 @@
+version: '3.7'
+
+services:
+
+  dispatcher:
+    build: ./dispatcher
+    image: dispatcher-image
+    container_name: dispatcher-container
+    ports:
+      - ${PORT_DISPATCHER}:${PORT_DISPATCHER}
+    depends_on:
+      - msb-db
+      - msb-rabbitmq
+    environment:
+      - SPRING_RABBITMQ_QUEUE_TEXT_MESSAGE_UPDATE=text_message_update
+      - SPRING_RABBITMQ_QUEUE_DOC_MESSAGE_UPDATE=doc_message_update
+      - SPRING_RABBITMQ_QUEUE_PHOTO_MESSAGE_UPDATE=photo_message_update
+      - SPRING_RABBITMQ_QUEUE_ANSWER_MESSAGE=answer_message
+      - SPRING_RABBITMQ_HOST=${SPRING_RABBITMQ_HOST}
+      - SPRING_RABBITMQ_PORT=${PORT_RABBITMQ_MESSAGES}
+      - SPRING_RABBITMQ_USER=${SPRING_RABBITMQ_USER}
+      - SPRING_RABBITMQ_PASSWORD=${SPRING_RABBITMQ_PASSWORD}
+      - BOT_NAME=$BOT_NAME
+      - BOT_TOKEN=$BOT_TOKEN
+      - BOT_URI=$BOT_URI
+      - PORT_DISPATCHER=$PORT_DISPATCHER
+
+  msb-db:
+    image: postgres:14.5-alpine
+    restart: unless-stopped
+    container_name: msb-db-container
+    ports:
+      - ${PORT_DB}:${PORT_DB}
+    volumes:
+      - msb-db-data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=${SPRING_RABBITMQ_USER}
+      - POSTGRES_PASSWORD=${SPRING_RABBITMQ_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+
+  msb-rabbitmq:
+    build: ./common-rabbitmq
+    restart: always
+    image: common-rabbitmq-image
+    container_name: common-rabbitmq-container
+    ports:
+      - ${PORT_RABBITMQ_MESSAGES}:${PORT_RABBITMQ_MESSAGES}
+      - ${PORT_RABBITMQ_INTERFACE}:${PORT_RABBITMQ_INTERFACE}
+    volumes:
+      - msb-rabbitmq-data:/var/lib/rabbitmq
+    environment:
+      - RABBITMQ_CONFIG_FILE=$RABBITMQ_CONFIG_FILE
+
+  node:
+    build: ./node
+    image: msb-node-image
+    container_name: msb-node-container
+    ports:
+      - ${PORT_NODE}:${PORT_NODE}
+    depends_on:
+      - msb-db
+      - dispatcher
+    environment:
+      - SPRING_RABBITMQ_QUEUE_TEXT_MESSAGE_UPDATE=text_message_update
+      - SPRING_RABBITMQ_QUEUE_DOC_MESSAGE_UPDATE=doc_message_update
+      - SPRING_RABBITMQ_QUEUE_PHOTO_MESSAGE_UPDATE=photo_message_update
+      - SPRING_RABBITMQ_QUEUE_ANSWER_MESSAGE=answer_message
+      - SPRING_RABBITMQ_QUEUE_REGISTRATION_MAIL=registration_mail
+      - SPRING_RABBITMQ_HOST=${SPRING_RABBITMQ_HOST}
+      - SPRING_RABBITMQ_PORT=${PORT_RABBITMQ_MESSAGES}
+      - SPRING_RABBITMQ_USER=${SPRING_RABBITMQ_USER}
+      - SPRING_RABBITMQ_PASSWORD=${SPRING_RABBITMQ_PASSWORD}
+      - DB_NAME=msb-db
+      - POSTGRES_DB=${POSTGRES_DB}
+      - SALT=$SALT
+      - BOT_TOKEN=$BOT_TOKEN
+      - BOT_URI=$BOT_URI
+      - PORT_NODE=$PORT_NODE
+      - PORT_DB=$PORT_DB
+
+  mail-service:
+    build: ./mail-service
+    image: msb-mail-service-image
+    container_name: msb-mail-service-container
+    ports:
+      - ${PORT_MAIL_SERVICE}:${PORT_MAIL_SERVICE}
+    depends_on:
+      - dispatcher
+    environment:
+      - PORT_MAIL_SERVICE=${PORT_MAIL_SERVICE}
+      - PORT_REST_SERVICE=${PORT_REST_SERVICE}
+      - MAIL_HOST=${MAIL_HOST}
+      - MAIL_USERNAME=${MAIL_USERNAME}
+      - MAIL_PASSWORD=${MAIL_PASSWORD}
+      - SPRING_RABBITMQ_HOST=${SPRING_RABBITMQ_HOST}
+      - SPRING_RABBITMQ_PORT=${PORT_RABBITMQ_MESSAGES}
+      - SPRING_RABBITMQ_USER=${SPRING_RABBITMQ_USER}
+      - SPRING_RABBITMQ_PASSWORD=${SPRING_RABBITMQ_PASSWORD}
+      - SPRING_RABBITMQ_QUEUE_REGISTRATION_MAIL=registration_mail
+      - BOT_URI=${BOT_URI}
+
+  rest-service:
+    build: ./rest-service
+    image: msb-rest-service-image
+    container_name: msb-rest-service-container
+    ports:
+      - ${PORT_REST_SERVICE}:${PORT_REST_SERVICE}
+    depends_on:
+      - dispatcher
+    environment:
+      - PORT_REST_SERVICE=${PORT_REST_SERVICE}
+      - SALT=$SALT
+      - DB_NAME=msb-db
+      - PORT_DB=$PORT_DB
+      - POSTGRES_DB=${POSTGRES_DB}
+      - SPRING_RABBITMQ_USER=${SPRING_RABBITMQ_USER}
+      - SPRING_RABBITMQ_PASSWORD=${SPRING_RABBITMQ_PASSWORD}
+
+volumes:
+  msb-rabbitmq-data:
+  msb-db-data:

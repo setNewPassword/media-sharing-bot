@@ -1,0 +1,21 @@
+server:
+  port: ${PORT_MAIL_SERVICE}
+
+spring:
+  mail:
+    host: ${MAIL_HOST}
+    port: 465
+    protocol: smtps
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
+  rabbitmq:
+    host: ${SPRING_RABBITMQ_HOST}
+    port: ${PORT_RABBITMQ_MESSAGES}
+    username: ${SPRING_RABBITMQ_USER}
+    password: ${SPRING_RABBITMQ_PASSWORD}
+    queues:
+      registration-mail: ${SPRING_RABBITMQ_QUEUE_REGISTRATION_MAIL}
+
+service:
+  activation:
+    uri: ${BOT_URI}:${PORT_REST_SERVICE}/user/activation?id={id}

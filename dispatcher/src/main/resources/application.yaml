@@ -1,0 +1,21 @@
+server:
+  port: ${PORT_DISPATCHER}
+  ssl:
+    enabled: false
+
+bot:
+  name: ${BOT_NAME}
+  token: ${BOT_TOKEN}
+  uri: ${BOT_URI}
+
+spring:
+  rabbitmq:
+    host: ${SPRING_RABBITMQ_HOST}
+    port: ${SPRING_RABBITMQ_PORT}
+    username: ${SPRING_RABBITMQ_USER}
+    password: ${SPRING_RABBITMQ_PASSWORD}
+    queues:
+      text-message-update: ${SPRING_RABBITMQ_QUEUE_TEXT_MESSAGE_UPDATE}
+      doc-message-update: ${SPRING_RABBITMQ_QUEUE_DOC_MESSAGE_UPDATE}
+      photo-message-update: ${SPRING_RABBITMQ_QUEUE_PHOTO_MESSAGE_UPDATE}
+      answer-message: ${SPRING_RABBITMQ_QUEUE_ANSWER_MESSAGE}

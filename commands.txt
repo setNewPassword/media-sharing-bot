@@ -1,0 +1,22 @@
+docker pull rabbitmq:3.11-management
+
+docker volume create rabbitmq_data
+
+docker run -d --hostname rabbitmq --name rabbitmq -p 5672:5672 -p 15672:15672 -v rabbitmq_data --restart=unless-stopped rabbitmq:3.11-management
+
+docker exec -it rabbitmq /bin/bash
+
+rabbitmqctl add_user btard Dim0nn1982$
+
+rabbitmqctl set_user_tags btard administrator
+
+rabbitmqctl set_permissions -p / btard ".*" ".*" ".*"
+
+exit
+
+docker run -d --hostname btard_db --name btard_db -p 5400:5432 -e POSTGRES_USER=btard -e POSTGRES_PASSWORD=Dim0nn1982$ -e POSTGRES_DB=btard_db -v /d/Java/media-sharing-bot/btard_db:/var/lib/postgresql/data --restart=unless-stopped postgres:14.5
+
+
+{"message": {"chat": {"id": 21293236, "type": "private", "username": "Btard", "last_name": "🖖🏼", "first_name": "Dee"}, "date": 1696944125, "from": {"id": 21293236, "is_bot": false, "username": "Btard", "last_name": "🖖🏼", "first_name": "Dee", "language_code": "ru"}, "text": "Hello from TG", "message_id": 47}, "update_id": 995337478}
+
+ngrok http 8084
